@@ -1,0 +1,36 @@
+name: Build ManaSeva APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract project
+        run: |
+          unzip -o *.zip -d project
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Build APK
+        run: |
+          chmod +x $(find project -name gradlew | head -1)
+          cd $(dirname $(find "$GITHUB_WORKSPACE/project" -name gradlew | head -1))
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ManaSeva-APK
+          path: project/**/build/outputs/apk/**/*.apk
